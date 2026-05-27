@@ -39,9 +39,6 @@ build/
 *.p12
 *.pfx
 
-# Internal dev notes (contains credentials and private context)
-CLAUDE.md
-
 # OS
 .DS_Store
 Thumbs.db
