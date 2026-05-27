@@ -1,0 +1,33 @@
+# Node
+node_modules/
+web/node_modules/
+admin/node_modules/
+
+# Angular cache
+.angular/
+
+# CMake build artifacts
+judge/build/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build
+dist/
+build/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

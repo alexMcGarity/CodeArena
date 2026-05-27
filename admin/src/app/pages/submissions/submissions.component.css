@@ -1,0 +1,15 @@
+h2 { margin: 0 0 20px; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.data-table th, .data-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #334155; }
+.data-table th { color: #94a3b8; font-weight: 600; }
+
+.verdict { font-weight: 600; font-size: 0.8rem; }
+.verdict-accepted     { color: #4ade80; }
+.verdict-wrong_answer { color: #f87171; }
+.verdict-compile_error{ color: #fb923c; }
+.verdict-judge_error  { color: #f87171; }
+.verdict-queued       { color: #94a3b8; }
+
+.muted { color: #64748b; }
+.error { color: #f87171; }

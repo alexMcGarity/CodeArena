@@ -1,0 +1,104 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+h2, h3 { margin: 0 0 16px; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+input, select, textarea {
+  padding: 8px 12px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font: inherit;
+  font-family: monospace;
+}
+
+input:focus, select:focus, textarea:focus { outline: none; border-color: #6366f1; }
+
+.description-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.description-editor textarea { width: 100%; box-sizing: border-box; resize: vertical; }
+
+.preview-body {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  min-height: 200px;
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  overflow: auto;
+}
+
+.form-actions { margin-bottom: 40px; }
+
+.btn-primary {
+  padding: 9px 20px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font: inherit;
+  text-decoration: none;
+}
+
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.testcases-section { margin-top: 32px; }
+
+.tc-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.tc-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+
+.tc-fields textarea { width: 100%; box-sizing: border-box; }
+
+.tc-actions { display: flex; gap: 8px; }
+
+.btn-sm {
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #e2e8f0;
+  font: inherit;
+  text-decoration: none;
+}
+
+.btn-danger { border-color: #7f1d1d; color: #f87171; background: transparent; }
+
+.error { color: #f87171; font-size: 0.875rem; margin-top: 8px; }
