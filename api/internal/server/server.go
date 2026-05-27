@@ -110,13 +110,27 @@ var problems = []Problem{
     },
 }
 
+func retryDB(name string, attempts int, fn func(context.Context) error) {
+    for i := 1; i <= attempts; i++ {
+        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+        err := fn(ctx)
+        cancel()
+        if err == nil {
+            return
+        }
+        log.Printf("warning: %s attempt %d/%d: %v", name, i, attempts, err)
+        if i < attempts {
+            time.Sleep(time.Duration(i) * 5 * time.Second)
+        }
+    }
+}
+
 func New() *http.Server {
-    ctx := context.Background()
     var store Store
 
     useInMemory := os.Getenv("USE_MEMORY_STORE") == "true"
     if !useInMemory {
-        db, err := connectDB(ctx)
+        db, err := connectDB(context.Background())
         if err != nil {
             log.Printf("warning: failed to connect to database: %v, falling back to in-memory store", err)
             store = NewInMemoryStore()
@@ -125,13 +139,16 @@ func New() *http.Server {
             if migrationsDir == "" {
                 migrationsDir = "./migrations"
             }
-            if err := runMigrations(ctx, db, migrationsDir); err != nil {
-                log.Printf("warning: migrations: %v", err)
-            }
-            if err := seedProblems(ctx, db); err != nil {
-                log.Printf("warning: failed to seed problems: %v", err)
-            }
             store = &PostgresStore{db: db}
+            // Run DB setup in background so :8080 binds immediately and Fly proxy doesn't time out.
+            go func() {
+                retryDB("migrations", 5, func(ctx context.Context) error {
+                    return runMigrations(ctx, db, migrationsDir)
+                })
+                retryDB("seed problems", 5, func(ctx context.Context) error {
+                    return seedProblems(ctx, db)
+                })
+            }()
         }
     } else {
         store = NewInMemoryStore()
@@ -140,9 +157,10 @@ func New() *http.Server {
     s := &Server{store: store, hub: NewHub()}
 
     if adminEmail := os.Getenv("SEED_ADMIN_EMAIL"); adminEmail != "" {
-        if err := s.store.SeedAdmin(ctx, adminEmail, os.Getenv("SEED_ADMIN_PASSWORD")); err != nil {
-            log.Printf("warning: seed admin: %v", err)
-        }
+        adminPassword := os.Getenv("SEED_ADMIN_PASSWORD")
+        go retryDB("seed admin", 5, func(ctx context.Context) error {
+            return s.store.SeedAdmin(ctx, adminEmail, adminPassword)
+        })
     }
 
     mux := http.NewServeMux()
