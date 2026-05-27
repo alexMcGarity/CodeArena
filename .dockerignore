@@ -4,3 +4,7 @@ node_modules
 .gitignore
 *.md
 .env
+judge/build/
+web/dist/
+admin/dist/
+.angular/

@@ -32,9 +32,9 @@ CodeArena/
 1. **MVP** ✅ — Go API + C++ judge + React UI, end-to-end submission working
 2. **Real-time + Auth** ✅ — WebSockets, JWT, submission history
 3. **Admin panel** ✅ — Angular CRUD for problems and test cases
-4. **Polish** — multi-language judge, deploy to Fly.io + Vercel, add to Vibe-Website
+4. **Polish** ✅ — multi-language judge, deploy to Fly.io + Vercel, add to Vibe-Website
 
-## Current Progress (as of 2026-05-27)
+## Current Progress (as of 2026-05-27) — ALL PHASES COMPLETE
 
 ### Phase 1 — Complete
 
@@ -64,7 +64,7 @@ CodeArena/
 
 **Docker Compose**: API + Postgres service, `db-data` volume
 
-**Tests** (`api/internal/server/`): 46 passing — handler tests (httptest), store unit tests, mock judge tests. Updated to 61 tests after Phase 3.
+**Tests**: 46 passing at end of Phase 1. Grew to 112 across all phases (see Phase 4 for final breakdown).
 
 ### Phase 2 — Complete
 
@@ -122,13 +122,58 @@ CodeArena/
 - Sidebar shell with `routerLinkActive` highlighting and logout
 - New dep: `marked` (markdown → HTML for description preview)
 
-### Phase 4 — Not started
-- Wire judge to `test_cases` table per problem (currently uses hardcoded cases in judge binary)
-- Seccomp/rlimit sandboxing in judge
-- Multi-language support (Python)
-- Monaco editor in React candidate UI (currently plain `<textarea>`)
-- Deploy Go API + judge to Fly.io or Railway; React + Angular to Vercel
-- Link from Vibe-Website projects page
+### Phase 4 — Complete
+
+**C++ judge rewrite** (`judge/src/main.cpp`):
+- Reads a JSON payload from stdin: `{ language, code, test_cases[], time_limit_ms, memory_limit_mb }`
+- Dynamic test cases — judge no longer has hardcoded cases; Go API fetches them from the DB and sends them
+- C++ path: `g++ -O2 -std=c++17` compile → run binary per test case with temp files in `/tmp`
+- Python 3 path: write `.py` → `python3 submission.py` per test case
+- Linux sandbox: `fork`/`exec` with `setrlimit(RLIMIT_CPU)` + `setrlimit(RLIMIT_AS)` in child; `SIGKILL` + poll-wait for wall-clock timeout in parent
+- Non-Linux fallback (Windows dev) uses `popen` without rlimit
+- `judge/CMakeLists.txt` — adds nlohmann/json v3.11.3 via `FetchContent` (header-only, no runtime deps)
+- Verdicts: `accepted` / `wrong_answer` / `compile_error` / `time_limit_exceeded` / `unsupported_language` / `judge_error`
+
+**Go API — judge integration**:
+- `runJudge` now accepts `testCases []TestCase`, `timeLimitMs`, `memLimitMb`; builds JSON payload and pipes it to the judge binary
+- Submission goroutine fetches problem limits + test cases from store before calling judge; returns `no_test_cases` if none configured
+- Mock judge updated to handle both `cpp` and `python` heuristics
+
+**React candidate UI**:
+- `@monaco-editor/react` replaces `<textarea>` — VS-dark theme, no minimap, auto-layout, font size 14
+- Python 3 added to language dropdown with its own default starter code
+- Verdict result card has coloured left-border per verdict type
+- API URLs use `import.meta.env.VITE_API_URL` / `VITE_WS_URL` with `localhost:8080` fallback for dev
+
+**Migration runner** (`api/internal/server/migrations.go`):
+- Reads `*.sql` files from `./migrations/` in alphabetical order at startup
+- Tracks applied files in `schema_migrations` table; idempotent across restarts
+- `MIGRATIONS_DIR` env var overrides the default path
+
+**Deployment**:
+- `Dockerfile` — three-stage build: Ubuntu+CMake (judge) → golang:1.25 (API) → Ubuntu runtime with g++ + python3
+- `fly.toml` — Fly.io config for `iad` region, 512 MB shared VM, auto-stop on idle
+- `web/vercel.json` / `admin/vercel.json` — SPA rewrites; Angular points to `dist/admin/browser`
+- Angular `src/environments/` — `environment.ts` (localhost) / `environment.prod.ts` (Fly.io URL), wired via `fileReplacements` in `angular.json`
+- Git repo initialized; all code committed
+
+**Live URLs**:
+- API: `https://codearena-api.fly.dev` (`/healthz` → `{"status":"ok"}`)
+- React: `https://web-g128hh1ip-alexmcgaritys-projects.vercel.app`
+- Admin: `https://admin-m10ft84rc-alexmcgaritys-projects.vercel.app`
+- Admin credentials: `amcgarity123@gmail.com` / `CodeArena2026!`
+
+**Tests**: 112 total, all passing
+- `internal/auth/jwt_test.go` — 8 tests: round-trip, expired, tampered signature, wrong secret, env var
+- `internal/server/hub_test.go` — 9 tests: subscribe/notify, buffered early-notify, multiple subscribers, unsubscribe isolation, cleanup, concurrent stress, independent IDs
+- `internal/server/inmemory_test.go` — 42 tests: all store methods, SeedAdmin (create + promote + normalise), problem CRUD, test case CRUD, list views, concurrent verdict updates, concurrent user creation
+- `internal/server/server_test.go` — 47 tests: all handler paths, content-type, CORS auth header, full submission flow via hub (3 integration tests), admin edge cases, auth missing fields, method-not-allowed coverage
+- `internal/server/judge_test.go` — 6 tests: mock verdicts for C++ and Python, language aliases, unsupported language
+
+**Vibe-Website**: CodeArena added as full project card in `projects.html`, replacing "Project 4" placeholder
+
+**Pending** (one-time action):
+- Add credit card at `fly.io/dashboard` to remove the 5-minute trial machine limit (hobby tier is free)
 
 ## Conventions
 
@@ -147,9 +192,37 @@ CodeArena/
 - Admin routes are the same Go server, separated by `/admin/` prefix and middleware role check
 - JWT is HS256, 24 h expiry, secret from `JWT_SECRET` env var (falls back to a dev default)
 
-## Hosting Target
+## Hosting
 
-Vibe-Website (existing project at `../Vibe-Website`). CodeArena will be linked from the projects page once deployed.
-- Go API + judge: Fly.io or Railway
-- React: Vercel
-- Angular: Vercel or same host as React
+All services are live.
+
+| Service | URL |
+|---|---|
+| Go API + judge | `https://codearena-api.fly.dev` (Fly.io, `iad`) |
+| React candidate UI | `https://web-g128hh1ip-alexmcgaritys-projects.vercel.app` |
+| Angular admin panel | `https://admin-m10ft84rc-alexmcgaritys-projects.vercel.app` |
+| Database | Fly.io managed Postgres (`codearena-db`, `iad`) |
+
+Linked from Vibe-Website (`../Vibe-Website/projects.html`).
+
+### Re-deploying
+
+```bash
+# API + judge (from repo root)
+fly deploy --app codearena-api
+
+# React (from web/)
+cd web && vercel --prod
+
+# Angular (from admin/)
+cd admin && vercel --prod
+```
+
+### Fly.io secrets reference
+
+| Secret | Purpose |
+|---|---|
+| `DATABASE_URL` | Auto-set by `fly postgres attach` |
+| `JWT_SECRET` | HS256 signing key (48-char random) |
+| `SEED_ADMIN_EMAIL` | Admin user email bootstrapped at startup |
+| `SEED_ADMIN_PASSWORD` | Admin user password bootstrapped at startup |

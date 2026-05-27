@@ -23,10 +23,21 @@ judge/build/
 *.test
 *.out
 
-# Build
+# Build artifacts
 dist/
 build/
 .vscode/
+
+# Vercel project metadata (contains account/project IDs)
+.vercel/
+
+# TLS / certificates
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
 
 # OS
 .DS_Store
