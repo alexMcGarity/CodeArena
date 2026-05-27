@@ -3,8 +3,8 @@
 A full-stack competitive coding platform in the style of LeetCode. Candidates browse problems, write solutions in a Monaco-powered editor, submit, and receive real-time verdicts over WebSockets. An Angular admin panel lets operators author problems, manage test cases, and review submission logs — all backed by the same Go API.
 
 **Live:**
-- Candidate UI → https://web-g128hh1ip-alexmcgaritys-projects.vercel.app
-- Admin panel → https://admin-m10ft84rc-alexmcgaritys-projects.vercel.app
+- Candidate UI → https://codearena.alexmcgarity.dev
+- Admin panel → https://codearena-admin.alexmcgarity.dev
 - API → https://codearena-api.fly.dev/healthz
 
 ---
@@ -28,7 +28,7 @@ A full-stack competitive coding platform in the style of LeetCode. Candidates br
 ```
 ┌─────────────────────────────────┐
 │      Candidate UI (React)       │  Monaco editor · Zustand auth
-│   web.vercel.app                │  React Query · WebSocket client
+│   codearena.alexmcgarity.dev    │  React Query · WebSocket client
 └──────────────┬──────────────────┘
                │ HTTPS / WSS
 ┌──────────────▼──────────────────┐
@@ -45,7 +45,7 @@ A full-stack competitive coding platform in the style of LeetCode. Candidates br
                  └───────────────┘
 ┌─────────────────────────────────┐
 │      Admin Panel (Angular)      │  Standalone components · signals
-│   admin.vercel.app              │  Reactive forms · HTTP interceptor
+│   codearena-admin.alexmcgarity.dev │  Reactive forms · HTTP interceptor
 └─────────────────────────────────┘
 ```
 
