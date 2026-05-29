@@ -64,8 +64,9 @@ func (s *Server) registerHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusCreated)
-    respondJSON(w, authResponse{Token: token, UserID: userID, Email: req.Email})
+    json.NewEncoder(w).Encode(authResponse{Token: token, UserID: userID, Email: req.Email, Role: "user"})
 }
 
 func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
